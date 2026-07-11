@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLW Interactive Simulator • Extended Electrodynamics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --primary: #0ea5e9;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            font-weight: 600;
+        }
+
+        .section-header {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            letter-spacing: -.025em;
+        }
+
+        .metric-value {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .slw-wave {
+            animation: slw-propagate 3s ease-in-out infinite;
+        }
+
+        @keyframes slw-propagate {
+            0%, 100% { transform: translateX(0); opacity: 0.7; }
+            50% { transform: translateX(15px); opacity: 1; }
+        }
+
+        .bifilar-coil {
+            animation: coil-rotate 20s linear infinite;
+        }
+
+        .metric-card {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                       box-shadow 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .formula {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background-color: #f8fafc;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #0ea5e9;
+        }
+
+        .nav-active {
+            color: #0ea5e9;
+            border-bottom: 2px solid #0ea5e9;
+        }
+
+        .value-display {
+            font-feature-settings: "ss02";
+        }
+
+        .edu-note {
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .chart-container {
+            position: relative;
+        }
+
+        .slider-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .physics-bg {
+            background-image: 
+                linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-screen-xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-x-3">
+                    <div class="w-10 h-10 bg-sky-600 rounded-2xl flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-waveform-lines text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-display text-3xl tracking-tighter font-semibold text-slate-900">SLW Simulator</h1>
+                        <p class="text-xs text-slate-500 -mt-1">Scalar-Longitudinal Wave • Extended Electrodynamics</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-x-2 text-sm">
+                    <div class="px-3 py-1.5 bg-slate-100 rounded-3xl flex items-center gap-x-2 text-xs font-medium">
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span class="text-slate-600">Educational v1.0</span>
+                    </div>
+                    <a href="#disclaimer" class="text-xs px-3 py-1.5 text-slate-500 hover:text-slate-700 transition-colors">Disclaimer</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-screen-xl mx-auto px-6 pt-8 pb-16">
+        
+        <!-- Hero / Intro -->
+        <div class="max-w-3xl mb-10">
+            <div class="inline-flex items-center gap-x-2 px-4 py-1.5 rounded-3xl bg-sky-100 text-sky-700 text-xs font-semibold tracking-wider mb-4">
+                <i class="fa-solid fa-atom"></i>
+                <span>BASED ON PEER-REVIEWED EED &amp; US PATENT</span>
+            </div>
+            
+            <h2 class="section-header text-5xl tracking-tighter font-semibold text-slate-900 leading-none mb-4">
+                Interactive Simulator for<br>Scalar-Longitudinal Waves
+            </h2>
+            <p class="text-xl text-slate-600 leading-relaxed">
+                Explore how a palm-sized bifilar coil detector converts incident Scalar-Longitudinal Wave (SLW) 
+                power into measurable output current at ranges up to 500 km. Built on Extended Electrodynamics (EED).
+            </p>
+            
+            <div class="flex items-center gap-x-4 mt-6">
+                <a href="#simulator" 
+                   class="inline-flex items-center justify-center gap-x-2 bg-slate-900 hover:bg-black transition-colors text-white text-sm font-semibold px-6 h-11 rounded-3xl shadow-sm">
+                    <span>Open Simulator</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <a href="#theory" 
+                   class="inline-flex items-center justify-center gap-x-2 text-sm font-medium px-5 h-11 text-slate-700 hover:text-slate-900 transition-colors">
+                    Learn the physics
+                </a>
+            </div>
+        </div>
+
+        <!-- Citations -->
+        <div class="bg-white border border-slate-200 rounded-3xl p-5 mb-12 text-xs">
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-slate-600">
+                <div>
+                    <span class="font-semibold text-slate-700">Primary Sources:</span>
+                </div>
+                <div class="flex items-center gap-x-1.5">
+                    <i class="fa-solid fa-book text-sky-600"></i>
+                    <span>Hively, L.M. &amp; Land, M. (2021). <span class="italic">"Extended electrodynamics and SHP theory"</span>. <span class="font-mono text-[10px]">J. Phys.: Conf. Ser. 1956 012011</span></span>
+                </div>
+                <div class="flex items-center gap-x-1.5">
+                    <i class="fa-solid fa-file-lines text-sky-600"></i>
+                    <span>Hively, L.M. (2016). <span class="italic">US Patent 9,306,527 B1</span> — Systems for generating/utilizing scalar-longitudinal waves.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theory Section -->
+        <div id="theory" class="mb-16">
+            <div class="flex items-end justify-between mb-6">
+                <div>
+                    <span class="uppercase tracking-[2px] text-xs font-bold text-sky-600">FOUNDATION</span>
+                    <h3 class="section-header text-3xl font-semibold tracking-tight">Extended Electrodynamics &amp; SLW</h3>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left: Key concepts -->
+                <div class="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-7">
+                    <div class="prose prose-slate max-w-none text-[15px]">
+                        <p class="lead text-slate-600">
+                            Classical Electrodynamics (CED) and QED gauge away the longitudinal (irrotational) components of the vector potential <span class="font-mono">A</span>, 
+                            electric field <span class="font-mono">E</span>, and current density <span class="font-mono">J</span>. Experiments (Aharonov-Bohm, Maxwell-Lodge effect, 
+                            Varma et al., living cell ion currents, lightning) demonstrate these components exist and are physically measurable.
+                        </p>
+                        
+                        <div class="my-5 p-4 bg-slate-50 border-l-4 border-sky-500 rounded-r-2xl text-sm">
+                            <p class="font-semibold text-slate-700 mb-1">Extended Electrodynamics (EED) restores completeness by retaining:</p>
+                            <ul class="list-disc pl-5 space-y-1 text-slate-600">
+                                <li>The scalar field <span class="font-mono">C = ∇·A + (1/c²) ∂Φ/∂t</span> (non-zero, dynamical)</li>
+                                <li>Longitudinal electric field <span class="font-mono">E_L</span> and gradient-driven current <span class="font-mono">J_L = ∇κ</span></li>
+                                <li>Scalar-Longitudinal Waves (SLW) that propagate with <span class="font-mono">B ≈ 0</span></li>
+                            </ul>
+                        </div>
+                        
+                        <p class="text-sm text-slate-600">
+                            Because <span class="font-mono">B=0</span>, there are no eddy currents → SLW is <span class="font-semibold">unconstrained by the classical skin effect</span> 
+                            and can propagate through thousands of skin depths of solid copper (preliminary experimental confirmation in Hively &amp; Loebl 2019).
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Right: Transmitter &amp; Detector cards -->
+                <div class="lg:col-span-5 space-y-4">
+                    
+                    <!-- Transmitter -->
+                    <div class="bg-white border border-slate-200 rounded-3xl p-5">
+                        <div class="flex items-center gap-x-3 mb-3">
+                            <div class="w-8 h-8 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-broadcast-tower"></i>
+                            </div>
+                            <div class="font-semibold">SLW Transmitter (Monopole + Skirt Balun)</div>
+                        </div>
+                        <div class="text-xs text-slate-600 leading-relaxed">
+                            A linear monopole driven at frequency f creates an oscillating charge distribution. 
+                            The coaxial skirt balun (λ/4 length) cancels return current on the outer conductor by 180° phase shift, 
+                            forcing a pure gradient-driven current <span class="font-mono">J_L = ∇κ</span> on the radiating element. 
+                            This launches the SLW (isotropic, ~1/r² power density).
+                        </div>
+                        <div class="mt-3 text-[10px] font-mono text-amber-600 bg-amber-50 px-3 py-1 rounded-2xl inline-block">
+                            Eq. (15) US 9,306,527 B1: P<sub>rad</sub> = I²/(4π) × √(μ/ε)
+                        </div>
+                    </div>
+                    
+                    <!-- Detector -->
+                    <div class="bg-white border border-slate-200 rounded-3xl p-5">
+                        <div class="flex items-center gap-x-3 mb-3">
+                            <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-microchip"></i>
+                            </div>
+                            <div class="font-semibold">Bifilar Coil Detector (~palm size)</div>
+                        </div>
+                        <div class="text-xs text-slate-600 leading-relaxed">
+                            Flat bifilar spiral (alternating conductors, ~10 cm diameter, wire-thin thickness). 
+                            Adjacent turns carry current in opposite directions → net <span class="font-mono">B ≈ 0</span> (magnetic cancellation). 
+                            The coil is oriented face-on to the incoming SLW so the longitudinal <span class="font-mono">E_L</span> 
+                            component drives a measurable gradient current between the two conductors. Output is taken differentially or single-ended into 50 Ω.
+                        </div>
+                        <div class="mt-2 flex items-center gap-x-2 text-[10px]">
+                            <div class="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-2xl font-medium">B = 0 (no skin effect)</div>
+                            <div class="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-2xl font-medium">Face-on max area</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulator -->
+        <div id="simulator" class="scroll-mt-8">
+            <div class="flex items-center justify-between mb-4 px-1">
+                <div>
+                    <span class="uppercase tracking-[1.5px] text-xs font-bold text-sky-600">INTERACTIVE TOOL</span>
+                    <h3 class="section-header text-3xl font-semibold tracking-tight">SLW Link Budget Simulator</h3>
+                </div>
+                <div class="text-xs px-3 py-1 bg-white border border-slate-200 rounded-3xl text-slate-500 flex items-center gap-x-1.5">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Free-space • 500 km max</span>
+                </div>
+            </div>
+            
+            <div class="bg-white border border-slate-200 shadow-sm rounded-3xl overflow-hidden">
+                
+                <!-- Visual Link -->
+                <div class="bg-slate-900 px-8 pt-6 pb-7 text-white relative">
+                    <div class="flex items-center justify-between max-w-4xl mx-auto">
+                        
+                        <!-- Transmitter -->
+                        <div class="flex flex-col items-center w-40">
+                            <div class="text-amber-400 text-xs font-mono tracking-widest mb-1.5">TRANSMITTER</div>
+                            <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-3xl flex items-center justify-center shadow-inner relative">
+                                <i class="fa-solid fa-broadcast-tower text-white text-4xl"></i>
+                                <div class="absolute -bottom-1 -right-1 bg-white text-amber-600 text-[9px] font-bold px-1.5 rounded-xl shadow">MONOPOLE</div>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <div class="text-xs text-amber-300">I<sub>tx</sub> = <span id="tx-current-val" class="font-mono text-lg text-white font-semibold">5.0</span> A</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Propagation -->
+                        <div class="flex-1 px-6 relative flex flex-col items-center">
+                            <div class="w-full h-px bg-gradient-to-r from-transparent via-sky-400/60 to-transparent mb-1"></div>
+                            
+                            <div class="flex items-center justify-center w-full">
+                                <div class="flex-1 h-px bg-sky-400/40"></div>
+                                
+                                <div class="px-4 flex flex-col items-center">
+                                    <div class="text-sky-400 text-[10px] font-mono tracking-[3px]">SLW PROPAGATION</div>
+                                    <div class="flex items-center gap-x-1 text-sky-300 mt-0.5">
+                                        <i class="fa-solid fa-waveform-lines slw-wave"></i>
+                                        <span class="text-xs font-mono" id="range-val">10.0 km</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex-1 h-px bg-sky-400/40"></div>
+                            </div>
+                            
+                            <div class="text-[10px] text-sky-400/70 mt-1 font-mono">ISOTROPIC • 1/r² ATTENUATION • B≈0</div>
+                        </div>
+                        
+                        <!-- Receiver -->
+                        <div class="flex flex-col items-center w-40">
+                            <div class="text-emerald-400 text-xs font-mono tracking-widest mb-1.5">BIFILAR DETECTOR</div>
+                            
+                            <!-- Simple bifilar coil SVG -->
+                            <div class="relative">
+                                <svg width="68" height="68" viewBox="0 0 68 68" class="drop-shadow">
+                                    <!-- Outer rings -->
+                                    <circle cx="34" cy="34" r="30" fill="none" stroke="#34d399" stroke-width="2.5" stroke-dasharray="4 2"/>
+                                    <circle cx="34" cy="34" r="24" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="3 2"/>
+                                    <circle cx="34" cy="34" r="18" fill="none" stroke="#34d399" stroke-width="1.75"/>
+                                    <circle cx="34" cy="34" r="12" fill="none" stroke="#34d399" stroke-width="1.5"/>
+                                    
+                                    <!-- Center dot -->
+                                    <circle cx="34" cy="34" r="4" fill="#10b981"/>
+                                    
+                                    <!-- Cross lines indicating bifilar / differential -->
+                                    <line x1="20" y1="20" x2="48" y2="48" stroke="#166534" stroke-width="1.25" stroke-opacity="0.6"/>
+                                    <line x1="48" y1="20" x2="20" y2="48" stroke="#166534" stroke-width="1.25" stroke-opacity="0.6"/>
+                                </svg>
+                                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 text-emerald-300 text-[9px] font-bold tracking-wider">B=0</div>
+                            </div>
+                            
+                            <div class="mt-2 text-center">
+                                <div class="text-xs text-emerald-300">A<sub>eff</sub> ≈ 78.5 cm² • face-on</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Controls -->
+                <div class="p-7 grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-8 bg-white">
+                    
+                    <!-- Sliders -->
+                    <div class="lg:col-span-5 space-y-8">
+                        
+                        <!-- I_tx Slider -->
+                        <div>
+                            <div class="flex justify-between items-baseline mb-2 px-0.5">
+                                <div>
+                                    <span class="font-semibold text-sm">Transmitter Current</span>
+                                    <span class="text-xs text-slate-400 ml-1.5">(I<sub>tx</sub>)</span>
+                                </div>
+                                <div class="font-mono text-xl font-semibold text-amber-600 tabular-nums" id="I-val">5.00</div>
+                            </div>
+                            <input type="range" id="I-slider" 
+                                   class="w-full accent-amber-600" 
+                                   min="0.1" max="10" step="0.05" value="5">
+                            <div class="flex justify-between text-[10px] text-slate-400 mt-1 px-0.5">
+                                <div>0.1 A</div>
+                                <div>10 A (max)</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Range Slider -->
+                        <div>
+                            <div class="flex justify-between items-baseline mb-2 px-0.5">
+                                <div>
+                                    <span class="font-semibold text-sm">Range</span>
+                                    <span class="text-xs text-slate-400 ml-1.5">(r)</span>
+                                </div>
+                                <div class="font-mono text-xl font-semibold text-sky-600 tabular-nums" id="r-val">10.0</div>
+                            </div>
+                            <input type="range" id="r-slider" 
+                                   class="w-full accent-sky-600" 
+                                   min="1" max="500" step="1" value="10">
+                            <div class="flex justify-between text-[10px] text-slate-400 mt-1 px-0.5">
+                                <div>1 km</div>
+                                <div>500 km</div>
+                            </div>
+                            <div class="text-[10px] text-center text-slate-400 mt-0.5">Free-space propagation through atmosphere into LEO</div>
+                        </div>
+                        
+                        <div class="pt-2">
+                            <button onclick="resetDefaults()" 
+                                    class="text-xs px-4 h-8 rounded-3xl border border-slate-300 hover:bg-slate-50 active:bg-slate-100 transition-colors flex items-center gap-x-2 text-slate-600">
+                                <i class="fa-solid fa-undo text-xs"></i>
+                                <span>Reset to defaults</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Key Metrics -->
+                    <div class="lg:col-span-7">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            
+                            <div class="metric-card bg-slate-50 border border-slate-200 rounded-3xl p-4">
+                                <div class="text-xs text-slate-500 mb-1">TOTAL RADIATED POWER</div>
+                                <div class="flex items-baseline gap-x-1">
+                                    <span id="P-rad" class="metric-value text-3xl font-semibold tabular-nums text-amber-600">754</span>
+                                    <span class="text-sm text-amber-600/70">W</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">P<sub>rad</sub> (Eq. 15, US Patent)</div>
+                            </div>
+                            
+                            <div class="metric-card bg-slate-50 border border-slate-200 rounded-3xl p-4">
+                                <div class="text-xs text-slate-500 mb-1">POWER DENSITY @ r</div>
+                                <div class="flex items-baseline gap-x-1">
+                                    <span id="S-val" class="metric-value text-3xl font-semibold tabular-nums text-sky-600">60.0</span>
+                                    <span class="text-sm text-sky-600/70">µW/m²</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Isotropic SLW • falls as 1/r²</div>
+                            </div>
+                            
+                            <div class="metric-card bg-slate-50 border border-slate-200 rounded-3xl p-4">
+                                <div class="text-xs text-slate-500 mb-1">INCIDENT POWER ON DETECTOR</div>
+                                <div class="flex items-baseline gap-x-1">
+                                    <span id="P-inc" class="metric-value text-3xl font-semibold tabular-nums text-emerald-600">0.47</span>
+                                    <span class="text-sm text-emerald-600/70">µW</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">A<sub>eff</sub> = 78.5 cm² • η = 50%</div>
+                            </div>
+                            
+                            <div class="metric-card bg-white border border-emerald-200 rounded-3xl p-4 col-span-2 md:col-span-1">
+                                <div class="text-xs text-emerald-600 mb-1 font-medium">DETECTOR OUTPUT CURRENT (rms)</div>
+                                <div class="flex items-baseline gap-x-1">
+                                    <span id="I-out" class="metric-value text-4xl font-semibold tabular-nums text-emerald-600">68.5</span>
+                                    <span class="text-sm text-emerald-600/70">nA</span>
+                                </div>
+                                <div class="text-[10px] text-emerald-600/70 mt-0.5">Into 50 Ω load • from P<sub>load</sub></div>
+                            </div>
+                            
+                            <div class="metric-card bg-white border border-violet-200 rounded-3xl p-4 col-span-2 md:col-span-2">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="text-xs text-violet-600 mb-1 font-medium">SNR @ EW RECEIVER</div>
+                                        <div class="flex items-baseline gap-x-1.5">
+                                            <span id="SNR-val" class="metric-value text-5xl font-semibold tabular-nums text-violet-600">85.2</span>
+                                            <span class="text-xl text-violet-600/70">dB</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[10px] px-2.5 py-0.5 bg-violet-100 text-violet-700 rounded-2xl inline-block">NF = 3 dB</div>
+                                        <div class="text-[10px] px-2.5 py-0.5 bg-violet-100 text-violet-700 rounded-2xl inline-block mt-1">B = 100 kHz</div>
+                                    </div>
+                                </div>
+                                <div class="mt-1 text-[10px] text-violet-500">Modern open-source EW / SIGINT receiver parameters</div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart -->
+                <div class="border-t border-slate-100 px-7 pt-5 pb-7 bg-slate-50">
+                    <div class="flex items-center justify-between mb-3 px-1">
+                        <div class="font-semibold text-sm flex items-center gap-x-2">
+                            <span>SNR vs Range</span>
+                            <span class="text-xs px-2 py-0.5 bg-white border text-slate-400 rounded-2xl">log scale</span>
+                        </div>
+                        <div class="text-xs text-slate-500">Current position marked • Drag sliders to update</div>
+                    </div>
+                    
+                    <div class="chart-container h-64">
+                        <canvas id="snr-chart"></canvas>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- Calculation transparency -->
+            <div class="mt-4 px-2 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1 items-center">
+                <div><span class="font-mono text-slate-400">P_rad</span> = I² / (4π) × Z₀   (Eq. 15 patent)</div>
+                <div><span class="font-mono text-slate-400">S(r)</span> = P_rad / (4π r²)</div>
+                <div><span class="font-mono text-slate-400">I_out</span> = √(S × A_eff × η / R_load)</div>
+                <div class="text-emerald-600">η = 50% overall (educational model)</div>
+            </div>
+        </div>
+
+        <!-- How the bifilar generates current -->
+        <div class="mt-14 max-w-4xl">
+            <h4 class="font-semibold tracking-tight text-xl mb-4 flex items-center gap-x-2">
+                <i class="fa-solid fa-question-circle text-emerald-600"></i>
+                <span>How the Bifilar Coil Produces Measurable Output Current</span>
+            </h4>
+            
+            <div class="prose prose-sm max-w-none text-slate-600">
+                <ol class="list-decimal pl-5 space-y-[7px]">
+                    <li>The incident SLW carries a longitudinal electric field <span class="font-mono">E_L</span> (radial for spherical wave, approx. uniform across the small detector at long range) and associated scalar field <span class="font-mono">C</span>.</li>
+                    <li>The palm-sized bifilar coil (diameter ≈ 10 cm, flat spiral) is oriented with its plane perpendicular to the propagation direction (maximum projected area ≈ 78.5 cm² facing the transmitter).</li>
+                    <li>Because adjacent turns are wound in opposite sense and conductively coupled, any magnetic field component is cancelled to first order (<span class="font-mono">B ≈ 0</span>). There is therefore no classical skin-effect dissipation.</li>
+                    <li>The longitudinal <span class="font-mono">E_L</span> drives charges along the wire length in a gradient fashion. The differential voltage/current between the two interleaved conductors is extracted as the output signal.</li>
+                    <li>This output is modeled here as delivering power <span class="font-mono">P_load = S(r) × A_eff × η</span> into a 50 Ω load. The resulting rms current <span class="font-mono">I_rms = √(P_load / 50)</span> is what would be presented to the front-end of a modern EW receiver.</li>
+                </ol>
+                <p class="text-xs mt-3 text-slate-500">Note: Actual conversion efficiency depends on exact winding geometry, wire conductivity, matching network, and frequency. The 50% figure used is conservative for educational illustration and consistent with the order-of-magnitude laboratory results shown in the Hively patent figures.</p>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div id="disclaimer" class="mt-16 pt-8 border-t text-xs text-slate-500 max-w-3xl">
+            <p class="font-semibold text-slate-600 mb-1">Educational Purpose Only</p>
+            <p>
+                This simulator was built by Dan Britton (BrittonSolutions@icloud.com) with assistance from Grok (xAI) to illustrate concepts from Extended Electrodynamics and US Patent 9,306,527 B1. 
+                The underlying SLW physics remains an active area of theoretical and experimental research and is not yet part of mainstream validated technology. 
+                All numerical results depend on modeling assumptions (isotropic radiation, effective aperture, conversion efficiency). 
+                Do not use for engineering, regulatory, safety, or operational decisions. 
+                Real-world performance would require extensive empirical calibration.
+            </p>
+            <p class="mt-3 text-[10px]">© 2026 • For research &amp; education • References: Hively &amp; Land (2021), Hively (2016)</p>
+        </div>
+        
+    </div>
+
+    <script>
+        // Tailwind script
+        function initializeTailwind() {
+            document.documentElement.style.setProperty('--accent', '#0ea5e9');
+        }
+        
+        // Constants
+        const Z0 = 376.73031346177;
+        const MU0 = 4 * Math.PI * 1e-7;
+        const EPS0 = 8.854187817e-12;
+        const A_EFF = Math.PI * (0.05 ** 2); // 78.54 cm²
+        const ETA_OVERALL = 0.50;            // conservative educational value
+        const R_LOAD = 50;                   // Ohm
+        const NF_DB = 3;
+        const B_HZ = 100000;                 // 100 kHz analysis bandwidth
+        
+        let chartInstance = null;
+        let currentI = 5.0;
+        let currentRkm = 10.0;
+        
+        function calculateAll(I, r_km) {
+            const r_m = r_km * 1000;
+            
+            // Total radiated power (Eq. 15 from US 9,306,527 B1)
+            const P_rad = (I * I / (4 * Math.PI)) * Z0; // Watts
+            
+            // Power density at range r (isotropic, falls as 1/r²)
+            const S = P_rad / (4 * Math.PI * r_m * r_m); // W/m²
+            
+            // Incident power on detector
+            const P_inc = S * A_EFF * ETA_OVERALL; // W
+            
+            // Output current into load
+            const P_load = P_inc; // already includes eta
+            const I_rms = Math.sqrt(P_load / R_LOAD); // Amps rms
+            
+            // SNR calculation
+            const P_load_dBm = (P_load > 0) ? 10 * Math.log10(P_load * 1000) : -Infinity;
+            const N0_dBm = -174;
+            const P_noise_dBm = N0_dBm + 10 * Math.log10(B_HZ) + NF_DB;
+            const SNR_dB = (P_load_dBm > -Infinity) ? P_load_dBm - P_noise_dBm : -999;
+            
+            // Approximate longitudinal E-field rms (V/m) using plane-wave-like relation
+            const E_rms = Math.sqrt(S * Z0);
+            
+            return {
+                P_rad,
+                S,
+                P_inc,
+                I_rms,
+                SNR_dB,
+                P_load_dBm,
+                P_noise_dBm,
+                E_rms,
+                r_m
+            };
+        }
+        
+        function formatScientific(val, unit = '', precision = 2) {
+            if (val === 0 || !isFinite(val)) return '0 ' + unit;
+            if (Math.abs(val) >= 1e-3 && Math.abs(val) < 1e6) {
+                return val.toFixed(precision) + ' ' + unit;
+            }
+            return val.toExponential(precision) + ' ' + unit;
+        }
+        
+        function updateMetrics(I, r_km) {
+            const res = calculateAll(I, r_km);
+            
+            // Update header values
+            document.getElementById('tx-current-val').textContent = I.toFixed(1);
+            document.getElementById('range-val').textContent = r_km.toFixed(1) + ' km';
+            
+            // Main metrics
+            document.getElementById('I-val').textContent = I.toFixed(2);
+            document.getElementById('r-val').textContent = r_km.toFixed(1);
+            
+            // P_rad
+            const pRadEl = document.getElementById('P-rad');
+            if (res.P_rad > 1000) {
+                pRadEl.textContent = (res.P_rad / 1000).toFixed(2);
+                pRadEl.nextElementSibling.textContent = 'kW';
+            } else {
+                pRadEl.textContent = res.P_rad.toFixed(0);
+                pRadEl.nextElementSibling.textContent = 'W';
+            }
+            
+            // S (power density)
+            const sEl = document.getElementById('S-val');
+            if (res.S < 1e-6) {
+                sEl.textContent = (res.S * 1e9).toFixed(1);
+                sEl.nextElementSibling.textContent = 'nW/m²';
+            } else if (res.S < 1e-3) {
+                sEl.textContent = (res.S * 1e6).toFixed(1);
+                sEl.nextElementSibling.textContent = 'µW/m²';
+            } else {
+                sEl.textContent = res.S.toFixed(3);
+                sEl.nextElementSibling.textContent = 'W/m²';
+            }
+            
+            // P_inc
+            const pIncEl = document.getElementById('P-inc');
+            if (res.P_inc < 1e-9) {
+                pIncEl.textContent = (res.P_inc * 1e12).toFixed(2);
+                pIncEl.nextElementSibling.textContent = 'pW';
+            } else if (res.P_inc < 1e-6) {
+                pIncEl.textContent = (res.P_inc * 1e9).toFixed(2);
+                pIncEl.nextElementSibling.textContent = 'nW';
+            } else if (res.P_inc < 1e-3) {
+                pIncEl.textContent = (res.P_inc * 1e6).toFixed(2);
+                pIncEl.nextElementSibling.textContent = 'µW';
+            } else {
+                pIncEl.textContent = res.P_inc.toFixed(3);
+                pIncEl.nextElementSibling.textContent = 'W';
+            }
+            
+            // I_out
+            const iOutEl = document.getElementById('I-out');
+            if (res.I_rms < 1e-9) {
+                iOutEl.textContent = (res.I_rms * 1e12).toFixed(1);
+                iOutEl.nextElementSibling.textContent = 'pA';
+            } else if (res.I_rms < 1e-6) {
+                iOutEl.textContent = (res.I_rms * 1e9).toFixed(1);
+                iOutEl.nextElementSibling.textContent = 'nA';
+            } else if (res.I_rms < 1e-3) {
+                iOutEl.textContent = (res.I_rms * 1e6).toFixed(1);
+                iOutEl.nextElementSibling.textContent = 'µA';
+            } else {
+                iOutEl.textContent = res.I_rms.toFixed(3);
+                iOutEl.nextElementSibling.textContent = 'mA';
+            }
+            
+            // SNR
+            const snrEl = document.getElementById('SNR-val');
+            if (res.SNR_dB > 999) {
+                snrEl.textContent = '>999';
+            } else if (res.SNR_dB < -50) {
+                snrEl.textContent = '−∞';
+            } else {
+                snrEl.textContent = res.SNR_dB.toFixed(1);
+            }
+            
+            // Color the SNR
+            if (res.SNR_dB > 10) {
+                snrEl.style.color = '#16a34a';
+            } else if (res.SNR_dB > 0) {
+                snrEl.style.color = '#ca8a04';
+            } else {
+                snrEl.style.color = '#dc2626';
+            }
+            
+            return res;
+        }
+        
+        function updateChart(I, currentRkm) {
+            if (!chartInstance) return;
+            
+            const labels = [];
+            const snrData = [];
+            const rValues = [];
+            
+            // Log-spaced points from 1 km to 500 km
+            const minR = 1;
+            const maxR = 500;
+            const numPoints = 60;
+            
+            for (let i = 0; i < numPoints; i++) {
+                const logMin = Math.log10(minR);
+                const logMax = Math.log10(maxR);
+                const r = Math.pow(10, logMin + (logMax - logMin) * (i / (numPoints - 1)));
+                rValues.push(r);
+                labels.push(r.toFixed(r < 10 ? 1 : 0));
+                
+                const res = calculateAll(I, r);
+                snrData.push(Math.max(res.SNR_dB, -80)); // floor for visibility
+            }
+            
+            chartInstance.data.labels = labels;
+            chartInstance.data.datasets[0].data = snrData;
+            
+            // Find index of current r
+            let currentIndex = 0;
+            let minDiff = Infinity;
+            for (let i = 0; i < rValues.length; i++) {
+                const diff = Math.abs(rValues[i] - currentRkm);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    currentIndex = i;
+                }
+            }
+            
+            // Update annotation / vertical line via plugin or just note in title
+            chartInstance.options.plugins.annotation = {
+                annotations: {
+                    line1: {
+                        type: 'line',
+                        xMin: currentIndex,
+                        xMax: currentIndex,
+                        borderColor: '#7c3aed',
+                        borderWidth: 2.5,
+                        borderDash: [4, 2],
+                        label: {
+                            content: currentRkm.toFixed(0) + ' km',
+                            display: true,
+                            position: 'start',
+                            backgroundColor: '#7c3aed',
+                            color: '#fff',
+                            font: { size: 10, weight: 'bold' }
+                        }
+                    }
+                }
+            };
+            
+            chartInstance.update();
+        }
+        
+        function initializeChart() {
+            const ctx = document.getElementById('snr-chart');
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'SNR (dB)',
+                        data: [],
+                        borderColor: '#7c3aed',
+                        borderWidth: 2.5,
+                        fill: true,
+                        backgroundColor: 'rgba(124, 58, 237, 0.08)',
+                        tension: 0.25,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        pointHoverBorderWidth: 2,
+                        pointHoverBackgroundColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: { color: '#e2e8f0', lineWidth: 0.5 },
+                            ticks: { 
+                                color: '#64748b', 
+                                font: { size: 10 },
+                                maxTicksLimit: 8,
+                                callback: function(val, index) {
+                                    return this.getLabelForValue(val) + ' km';
+                                }
+                            },
+                            title: { display: true, text: 'Range (km, log scale)', color: '#64748b', font: { size: 11 } }
+                        },
+                        y: {
+                            grid: { color: '#e2e8f0', lineWidth: 0.5 },
+                            ticks: { color: '#64748b', font: { size: 10 } },
+                            title: { display: true, text: 'SNR (dB)', color: '#64748b', font: { size: 11 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e2937',
+                            titleFont: { size: 11 },
+                            bodyFont: { size: 12, weight: 'bold' },
+                            callbacks: {
+                                label: function(ctx) {
+                                    return 'SNR: ' + ctx.raw.toFixed(1) + ' dB';
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        line: { borderJoinStyle: 'round' }
+                    }
+                }
+            });
+            
+            // Initial data
+            updateChart(currentI, currentRkm);
+        }
+        
+        function setupSliders() {
+            const I_slider = document.getElementById('I-slider');
+            const r_slider = document.getElementById('r-slider');
+            
+            // Set initial values
+            I_slider.value = currentI;
+            r_slider.value = currentRkm;
+            
+            function onChange() {
+                currentI = parseFloat(I_slider.value);
+                currentRkm = parseFloat(r_slider.value);
+                
+                const res = updateMetrics(currentI, currentRkm);
+                updateChart(currentI, currentRkm);
+            }
+            
+            I_slider.addEventListener('input', onChange);
+            r_slider.addEventListener('input', onChange);
+            
+            // Initial update
+            setTimeout(() => {
+                updateMetrics(currentI, currentRkm);
+                updateChart(currentI, currentRkm);
+            }, 50);
+        }
+        
+        function resetDefaults() {
+            currentI = 5.0;
+            currentRkm = 10.0;
+            
+            document.getElementById('I-slider').value = currentI;
+            document.getElementById('r-slider').value = currentRkm;
+            
+            updateMetrics(currentI, currentRkm);
+            updateChart(currentI, currentRkm);
+        }
+        
+        function initializeEverything() {
+            initializeTailwind();
+            
+            // Boot sliders + metrics
+            setupSliders();
+            
+            // Boot chart
+            initializeChart();
+            
+            // Keyboard support (optional)
+            document.addEventListener('keydown', function(e) {
+                if (e.key === '?') {
+                    const sim = document.getElementById('simulator');
+                    if (sim) sim.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    e.preventDefault();
+                }
+            });
+            
+            // Easter egg: click header to reset
+            const header = document.querySelector('header');
+            if (header) {
+                header.addEventListener('click', function(ev) {
+                    if (ev.detail === 3) { // triple click
+                        resetDefaults();
+                    }
+                });
+            }
+            
+            // Final accessibility note
+            console.log('%c[SLW Simulator] Interactive educational tool initialized. All calculations are client-side.', 'color:#64748b');
+        }
+        
+        // Boot
+        window.onload = initializeEverything;
+    </script>
+</body>
+</html>
