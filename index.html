@@ -93,6 +93,13 @@
                 linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
             background-size: 24px 24px;
         }
+        /* 2026-09-30 minimal responsive fix (layout only, no physics): stop horizontal overflow at 390 px */
+        @media (max-width: 480px) {
+            header .max-w-screen-xl { padding-left: 1rem; padding-right: 1rem; }
+            header .flex.items-center.justify-between { flex-wrap: wrap; row-gap: .5rem; }
+            .w-40 { width: 7rem; }
+            img, svg, canvas, video { max-width: 100%; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
