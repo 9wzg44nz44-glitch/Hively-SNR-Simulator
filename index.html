@@ -222,7 +222,10 @@
                             This launches the SLW (isotropic, ~1/r² power density).
                         </div>
                         <div class="mt-3 text-[10px] font-mono text-amber-600 bg-amber-50 px-3 py-1 rounded-2xl inline-block">
-                            Eq. (15) US 9,306,527 B1: P<sub>rad</sub> = I²/(4π) × √(μ/ε)
+                            Patent Eq. (15) US 9,306,527 B1 (quote): P<sub>rad</sub> = I²/(4π) × √(μ/ε) [W]
+                        </div>
+                        <div class="mt-2 text-[10px] font-mono text-amber-700 bg-amber-50 px-3 py-1 rounded-2xl inline-block">
+                            Paper Eq. 38/B5 per erratum: P<sub>OUT</sub> = I² r̂ / [2 (4π r)²] × √(μ/ε) [W/m²] (density; patent total is 2× the integrated paper form)
                         </div>
                     </div>
                     
@@ -388,21 +391,21 @@
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                             
                             <div class="metric-card bg-slate-50 border border-slate-200 rounded-3xl p-4">
-                                <div class="text-xs text-slate-500 mb-1">TOTAL RADIATED POWER</div>
+                                <div class="text-xs text-slate-500 mb-1">TOTAL POWER (DERIVED)</div>
                                 <div class="flex items-baseline gap-x-1">
                                     <span id="P-rad" class="metric-value text-3xl font-semibold tabular-nums text-amber-600">754</span>
                                     <span class="text-sm text-amber-600/70">W</span>
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">P<sub>rad</sub> (Eq. 15, US Patent)</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">4π r² · P<sub>OUT</sub> = I<sub>pk</sub>² Z₀/(8π) • derived, ASSUMPTION</div>
                             </div>
                             
                             <div class="metric-card bg-slate-50 border border-slate-200 rounded-3xl p-4">
-                                <div class="text-xs text-slate-500 mb-1">POWER DENSITY @ r</div>
+                                <div class="text-xs text-slate-500 mb-1">P<sub>OUT</sub> POWER DENSITY @ r</div>
                                 <div class="flex items-baseline gap-x-1">
                                     <span id="S-val" class="metric-value text-3xl font-semibold tabular-nums text-sky-600">60.0</span>
                                     <span class="text-sm text-sky-600/70">µW/m²</span>
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">Isotropic SLW • falls as 1/r²</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">W/m² • paper Eq. 38/B5 per erratum • falls as 1/r²</div>
                             </div>
                             
                             <div class="metric-card bg-slate-50 border border-slate-200 rounded-3xl p-4">
@@ -463,8 +466,8 @@
             
             <!-- Calculation transparency -->
             <div class="mt-4 px-2 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1 items-center">
-                <div><span class="font-mono text-slate-400">P_rad</span> = I² / (4π) × Z₀   (Eq. 15 patent)</div>
-                <div><span class="font-mono text-slate-400">S(r)</span> = P_rad / (4π r²)</div>
+                <div><span class="font-mono text-slate-400">P_OUT(r)</span> = I_pk² Z₀ / [2 (4π r)²]  W/m²   (Hively &amp; Loebl 2019 Eq. 38/B5 per erratum, FACT; I = peak, ASSUMPTION)</div>
+                <div><span class="font-mono text-slate-400">P_total</span> = 4π r² · P_OUT = I_pk² Z₀ / (8π)   (DERIVED, ASSUMPTION: spherical integral; patent Eq. 15 total is I² Z₀/(4π), 2×)</div>
                 <div><span class="font-mono text-slate-400">I_out</span> = √(S × A_eff × η / R_load)</div>
                 <div class="text-emerald-600">η = 50% overall (educational model)</div>
             </div>
@@ -487,6 +490,12 @@
                 </ol>
                 <p class="text-xs mt-3 text-slate-500">Note: Actual conversion efficiency depends on exact winding geometry, wire conductivity, matching network, and frequency. The 50% figure used is conservative for educational illustration and consistent with the order-of-magnitude laboratory results shown in the Hively patent figures.</p>
             </div>
+        </div>
+
+        <!-- Formula history -->
+        <div id="formula-history" class="mt-10 max-w-4xl text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+            <p><b>Formula history (2026-09-30, version pout-erratum-v1).</b> <b>FACT</b> (erratum-sourced): Hively &amp; Loebl 2019 Eq. 38/B5 as corrected by the erratum (Phys. Essays 32(3), 417) is P<sub>OUT</sub> = I² r̂ / [2 (4π r)²] · √(μ/ε), a power <em>density</em> in W/m² along r̂. Until this date this page used the as-first-printed form without the ½ (I² Z / (4π r)²), which is 3.01 dB (×2) too high; every power or density value is now ×0.5 (−3.01 dB) and every field amplitude ×0.7071. <b>ASSUMPTION</b>: I is the peak amplitude (confirmed by Dan Britton, 2026-09-30). <b>DERIVED / ASSUMPTION</b> (spherical integral, not the paper's P<sub>OUT</sub>): total watts = 4π r² · P<sub>OUT</sub> = I² Z / (8π). US 9,306,527 Eq. 15, P = (I²/4π)√(μ/ε) in watts, is quoted unchanged as a patent quote; it is twice the erratum-integrated total (documented difference: the erratum does not correct the patent).</p>
+            <p class="mt-1 text-slate-500">Version: pout-erratum-v1 (2026-09-30).</p>
         </div>
 
         <!-- Disclaimer -->
@@ -527,11 +536,12 @@
         function calculateAll(I, r_km) {
             const r_m = r_km * 1000;
             
-            // Total radiated power (Eq. 15 from US 9,306,527 B1)
-            const P_rad = (I * I / (4 * Math.PI)) * Z0; // Watts
+            // P_OUT per Hively & Loebl 2019 Eq. 38/B5 as corrected by the erratum (Phys. Essays 32(3) 417):
+            // power density (W/m^2) = I_pk^2 Z0 / [2 (4 pi r)^2]  (I = peak, ASSUMPTION). Was I^2 Z0/(4 pi r)^2 (no 1/2) before 2026-09-30.
+            const S = (I * I * Z0) / (2 * Math.pow(4 * Math.PI * r_m, 2)); // W/m² = P_OUT(r)
             
-            // Power density at range r (isotropic, falls as 1/r²)
-            const S = P_rad / (4 * Math.PI * r_m * r_m); // W/m²
+            // DERIVED (ASSUMPTION: spherical integral, not the paper's P_OUT): total watts = 4 pi r^2 * P_OUT = I^2 Z0/(8 pi)
+            const P_rad = S * 4 * Math.PI * r_m * r_m; // Watts (derived total)
             
             // Incident power on detector
             const P_inc = S * A_EFF * ETA_OVERALL; // W
